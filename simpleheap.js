@@ -19,8 +19,8 @@ function heapUp(heap, idx) {
   var items   = heap._items
   var weights = heap._weights
   var size    = heap._size
-  var w = weights[idx]
-  var x = items[idx]
+  var w       = weights[idx]
+  var x       = items[idx]
   while(idx > 0) {
     var p = idx >>> 1
     var pw = weights[p]
@@ -102,16 +102,16 @@ proto.clear = function() {
   this.size = 0
 }
 
-proto.upsert = function(x, w) {
+proto.put = function(x, w) {
   x = x|0
   w = +w  
-  if(x < 0 || x >= this.capacity) {
-    return
-  }
   var size    = this.size
   var locs    = this._locations
   var items   = this._items
   var weights = this._weights
+  if(x < 0 || x >= locs.length) {
+    return
+  }
   var prevLoc = locs[x]
   if(prevLoc >= 0) {
     var prevWeight = weights[prevLoc]
@@ -134,7 +134,7 @@ proto.upsert = function(x, w) {
   }
 }
 
-proto.remove = function(x) {
+proto.pop = function(x) {
   var size = this.size
   if(size <= 0) {
     return -1
@@ -144,14 +144,14 @@ proto.remove = function(x) {
   var weights = this._weights
   if(typeof x === 'number') {
     x = x|0
-    if(x < 0 || x >= this.capacity || locs[x] < 0) {
+    if(x < 0 || x >= locs.length || locs[x] < 0) {
       return -1
     }
     var prevLoc = locs[x]
     weights[prevLoc] = -Infinity
     heapUp(this, prevLoc)
   } else {
-    x = items[0]
+    x = items[0]|0
   }
   locs[x] = -1
   var lastIdx = size - 1
@@ -163,22 +163,23 @@ proto.remove = function(x) {
   return x
 }
 
-proto.weight = function(item) {
-  var loc = this._locations[item]
-  if(loc < 0) {
-    return NaN
-  }
-  return this._weights[loc]
-}
-
-proto.minWeight = function() {
-  if(this.size > 0) {
+proto.weight = function(x) {
+  if(typeof x === 'number') {
+    x = x|0
+    if(x < 0 || x >= this._locations.length) {
+      return NaN
+    }
+    var loc = this._locations[x]
+    if(loc < 0) {
+      return NaN
+    }
+    return this._weights[loc]
+  } else {
     return this._weights[0]
   }
-  return NaN
 }
 
-proto.minItem = function() {
+proto.top = function() {
   if(this.size > 0) {
     return this._items[0]
   }
@@ -206,8 +207,8 @@ proto.resize = function(ncapacity) {
   var nlocations = pool.mallocDouble(nlocations)
   var size       = this.size
   for(var i=0; i<size; ++i) {
-    nitems[i] = items[i]
-    nweights[i] = weights[i]
+    nitems[i]     = items[i]
+    nweights[i]   = weights[i]
     nlocations[i] = locations[i]
   }
   for(var i=size; i<ncapacity; ++i) {

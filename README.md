@@ -2,43 +2,47 @@ simple-heap
 ===========
 A no-frills binary heap with finite double precision weights and unique integer items from a finite universe.
 
+Memory for the heap is stored in a set of typed arrays and other than the constructor and `resize()`, none of the methods require any memory allocation or garbage collection.
+
 # Example
 
 ```javascript
 var createHeap = require('simple-heap')
+
+//Create a new heap with a maximum capacity of 10 items
 var heap = createHeap(10)
 
 for(var i=0; i<10; ++i) {
-  //upsert() adds an item to the heap or changes a weight
-  heap.upsert(
+  //put() adds an item to the heap or changes a weight
+  heap.put(
     i,               // item
     Math.pow(i-5,2)) // weight
 }
 
 for(var i=0; i<10; ++i) {
   //You can access the top item in the heap with minItem()/minWeight()
-  console.log(heap.minItem(), heap.minWeight())
+  console.log(heap.top(), heap.weight())
 
-  //remove() when called with no arguments pops the top item
-  heap.remove()
+  //pop() when called with no arguments removes the top item
+  heap.pop()
 }
 
 //You can change the weights of an item by calling upsert again
 for(var i=0; i<10; ++i) {
-  heap.upsert(i, Math.random())
+  heap.put(i, Math.random())
 }
 for(var i=9; i>=0; --i) {
-  heap.upsert(i, i)
+  heap.put(i, i)
 }
 
-//remove(item) takes an item out of the heap
+//pop(item) takes an item out of the heap
 for(var i=0; i<10; i+=2) {
-  heap.remove(i)
+  heap.pop(i)
 }
 
 //Remove all remaining items from heap
 while(heap.size > 0) {
-  console.log(heap.remove())
+  console.log(heap.pop())
 }
 
 //When you are all done with the heap, it is good practice to dispose it so its memory
@@ -97,7 +101,7 @@ The maximum capacity of the heap
 
 ## Methods
 
-#### `heap.upsert(item, weight)`
+#### `heap.put(item, weight)`
 If `item` is not in the heap, then adds it to the heap with the given weight.  Otherwise, if `item` is in the `heap` then the weight of item is changed to `weight`
 
 * `item` is an integer between `0` and `heap.capacity` representing the key of the item
@@ -105,7 +109,7 @@ If `item` is not in the heap, then adds it to the heap with the given weight.  O
 
 **Time complexity** `O(log(heap.size))`
 
-#### `heap.remove([item])`
+#### `heap.pop([item])`
 Removes `item` from the heap, or if not specified removes the smallest item.
 
 * `item` is an optional argument, which if passed is the item to remove otherwise the top of the heap is removed.
@@ -114,18 +118,17 @@ Removes `item` from the heap, or if not specified removes the smallest item.
 
 **Time complexity** `O(log(heap.size))`
 
-#### `heap.weight(item)`
+#### `heap.weight([item])`
+Find the weight of the item or else the weight of the top item
 
-**Returns** The weight of `item`
+* `item` is the item whose weight we are accessing.  Defaults to `heap.top()`
 
-**Time complexity** `O(1)`
-
-#### `heap.minWeight()`
-**Returns** The weight of the top item or `NaN` if the heap is empty
+**Returns** The weight of `item` in the heap, or if `item` is not in the heap returns `NaN`
 
 **Time complexity** `O(1)`
 
-#### `heap.minItem()`
+#### `heap.top()`
+
 **Returns** The top item or `-1` if the heap is empty
 
 **Time complexity** `O(1)`
