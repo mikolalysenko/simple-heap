@@ -22,16 +22,16 @@ function heapUp(heap, idx) {
   var w       = weights[idx]
   var x       = items[idx]
   while(idx > 0) {
-    var p = idx >>> 1
+    var p  = (idx-1) >>> 1
     var pw = weights[p]
     if(pw <= w) {
       break
     }
     var px = items[p]
     weights[idx] = pw
-    items[idx] = px
-    locs[px] = idx
-    idx = p
+    items[idx]   = px
+    locs[px]     = idx
+    idx          = p
   }
   weights[idx] = w
   items[idx]   = x
@@ -44,24 +44,29 @@ function heapDown(heap, x, w) {
   var weights = heap._weights
   var size    = heap.size
   var idx     = 0
-outer:
   while(true) {
-    var cidx = 2 * idx
-    for(var j=0; j<2; ++j) {
-      if(++cidx >= size) {
-        break outer
-      }
-      var cw = weights[cidx]
-      if(cw < w) {
-        var cx = items[cidx]
-        weights[idx] = cw
-        items[idx]   = cx
-        locs[cx]     = idx
-        idx = cidx
-        continue outer
+    var left  = 2*idx + 1
+    var right = 2*(idx + 1)
+    if(left >= size) {
+      break
+    }
+    var cidx = left
+    var cw   = weights[left]
+    if(right < size) {
+      var rw = weights[right]
+      if(rw < cw) {
+        cw   = rw
+        cidx = right
       }
     }
-    break
+    if(w <= cw) {
+      break
+    }
+    var cx = items[cidx]
+    weights[idx] = cw
+    items[idx]   = cx
+    locs[cx]     = idx
+    idx = cidx
   }
   weights[idx] = w
   items[idx]   = x
@@ -121,9 +126,7 @@ proto.put = function(x, w) {
     } else if(w > prevWeight) {
       weights[prevLoc] = -Infinity
       heapUp(this, prevLoc)
-      heapSwap(this, 0, size-1)
-      weights[size-1] = w
-      heapUp(this, size-1)
+      heapDown(this, x, w)
     }
   } else {
     locs[x]       = size
@@ -144,10 +147,13 @@ proto.pop = function(x) {
   var weights = this._weights
   if(typeof x === 'number') {
     x = x|0
-    if(x < 0 || x >= locs.length || locs[x] < 0) {
+    if(x < 0 || x >= locs.length) {
       return -1
     }
     var prevLoc = locs[x]
+    if(prevLoc < 0) {
+      return -1
+    }
     weights[prevLoc] = -Infinity
     heapUp(this, prevLoc)
   } else {
@@ -174,8 +180,10 @@ proto.weight = function(x) {
       return NaN
     }
     return this._weights[loc]
-  } else {
+  } else if(this.size > 0) {
     return this._weights[0]
+  } else {
+    return NaN
   }
 }
 

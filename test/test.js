@@ -17,7 +17,7 @@ function checkInvariant(t, heap) {
 
   if(size === 0) {
     t.equals(heap.top(), -1, 'top ok')
-    t.equals(heap.weight(), -1, 'top weight ok')
+    t.ok(isNaN(heap.weight()), 'top weight ok')
   } else {
     t.equals(heap.top(), items[0], 'top ok')
     t.equals(heap.weight(), weights[0], 'top weight ok')
@@ -54,14 +54,33 @@ function checkInvariant(t, heap) {
 }
 
 tape('fuzz test', function(t) {
-  for(var count=0; count<10; ++count) {
+  for(var count=0; count<5; ++count) {
     var heap = createHeap(100)
 
     for(var i=0; i<100; ++i) {
-      heap.put(i, Math.random())
+      var w = Math.random()
+      heap.put(i, w)
+      t.equals(heap.weight(i), w)
+      checkInvariant(t, heap)
+    }
+    
+    for(var i=0; i<100; ++i) {
+      var x = (Math.random()*100)|0
+      var w = Math.random()
+      heap.put(x, w)
+      t.equals(heap.weight(x), w)
       checkInvariant(t, heap)
     }
 
+    var sorted = []
+    for(var i=0; i<100; ++i) {
+      sorted.push(heap.weight())
+      heap.pop()
+      checkInvariant(t, heap)
+    }
+    for(var i=1; i<100; ++i) {
+      t.ok(sorted[i-1] < sorted[i], 'compare:' + sorted[i-1] + '<=' + sorted[i])
+    }
   }
   t.end()
 })

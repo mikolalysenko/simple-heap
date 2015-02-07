@@ -45,8 +45,8 @@ while(heap.size > 0) {
   console.log(heap.pop())
 }
 
-//When you are all done with the heap, it is good practice to dispose it so its memory
-//can be reused by the typedarray pool
+//When you are all done with the heap you need to dispose it so its memory
+//can be reused by typedarray-pool
 heap.dispose()
 ```
 
