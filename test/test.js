@@ -16,7 +16,11 @@ function checkInvariant(t, heap) {
   t.ok(0 <= size && size <= capacity, 'size ok')
 
   if(size === 0) {
-    t.equals(heap.minItem(), 0, 'minItem ok')
+    t.equals(heap.top(), -1, 'top ok')
+    t.equals(heap.weight(), -1, 'top weight ok')
+  } else {
+    t.equals(heap.top(), items[0], 'top ok')
+    t.equals(heap.weight(), weights[0], 'top weight ok')
   }
 
   for(var i=0; i<capacity; ++i) {
@@ -35,6 +39,7 @@ function checkInvariant(t, heap) {
     t.ok(0 <= x && x < capacity, 'items[' + i + ']=' + x + ' ok')
     t.ok(!isNaN(w) && isFinite(w), 'weight valid double')
     t.equals(locations[x], i, 'location ok')
+    t.equals(heap.weight(x), w, 'weight() consistent')
 
     var child = 2*i
     for(var j=0; j<2; ++j) {
