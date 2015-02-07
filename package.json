@@ -1,0 +1,38 @@
+{
+  "name": "simple-heap",
+  "version": "1.0.0",
+  "description": "A basic binary heap data structure",
+  "main": "simpleheap.js",
+  "directories": {
+    "example": "example",
+    "test": "test"
+  },
+  "dependencies": {
+    "typedarray-pool": "^1.1.0"
+  },
+  "devDependencies": {
+    "tape": "^3.5.0"
+  },
+  "scripts": {
+    "test": "tape test/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mikolalysenko/simple-heap.git"
+  },
+  "keywords": [
+    "binary",
+    "heap",
+    "array",
+    "double",
+    "float",
+    "number",
+    "int"
+  ],
+  "author": "Mikola Lysenko",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mikolalysenko/simple-heap/issues"
+  },
+  "homepage": "https://github.com/mikolalysenko/simple-heap"
+}
