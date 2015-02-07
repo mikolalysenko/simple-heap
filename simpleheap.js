@@ -44,7 +44,6 @@ function heapDown(heap, x, w) {
   var weights = heap._weights
   var size    = heap.size
   var idx     = 0
-
 outer:
   while(true) {
     var cidx = 2 * idx
@@ -80,49 +79,62 @@ function heapSwap(heap, a, b) {
   var weightB = weights[b]
   items[a]    = itemB
   items[b]    = itemA
-  locations[itemA] = b
-  locations[itemB] = a
-  weights[a] = weightB
-  weights[b] = weightA
+  locs[itemA] = b
+  locs[itemB] = a
+  weights[a]  = weightB
+  weights[b]  = weightA
 }
 
 proto.clear = function() {
   var count = this.size
+  var cap   = this.capacity
   var locs  = this._locations
-  for(var i=0; i<count; ++i) {
-    locs[i] = -1
+  var items = this._items
+  if(512 * count < this.capacity) {
+    for(var i=0; i<count; ++i) {
+      locs[items[i]] = -1
+    }
+  } else {
+    for(var i=0; i<cap; ++i) {
+      locs[i] = cap
+    }
   }
   this.size = 0
 }
 
-proto.push = function(item, weight) {
+proto.upsert = function(x, w) {
+  x = x|0
+  w = +w  
+  if(x < 0 || x >= this.capacity) {
+    return
+  }
   var size    = this.size
   var locs    = this._locations
   var items   = this._items
   var weights = this._weights
-  var prevLoc = locs[item]
+  var prevLoc = locs[x]
   if(prevLoc >= 0) {
     var prevWeight = weights[prevLoc]
-    if(weight < prevWeight) {
-      weights[prevLoc] = weight
+    if(w < prevWeight) {
+      weights[prevLoc] = w
       heapUp(this, prevLoc)
-    } else if(weight > prevWeight) {
+    } else if(w > prevWeight) {
       weights[prevLoc] = -Infinity
       heapUp(this, prevLoc)
       heapSwap(this, 0, size-1)
-      weights[size-1] = weight
+      weights[size-1] = w
       heapUp(this, size-1)
     }
   } else {
-    locs[item]    = size
-    items[size]   = item
-    weights[size] = weight
+    locs[x]       = size
+    items[size]   = x
+    weights[size] = w
     this.size     += 1
     heapUp(this, size)
   }
 }
 
-proto.pop = function() {
+proto.remove = function(x) {
   var size = this.size
   if(size <= 0) {
     return -1
@@ -130,21 +142,25 @@ proto.pop = function() {
   var locs    = this._locations
   var items   = this._items
   var weights = this._weights
-  var x = items[0]
-  locs[x] = -1
-  if(size <= 1) {
-    this.size -= 1
-    return x
+  if(typeof x === 'number') {
+    x = x|0
+    if(x < 0 || x >= this.capacity || locs[x] < 0) {
+      return -1
+    }
+    var prevLoc = locs[x]
+    weights[prevLoc] = -Infinity
+    heapUp(this, prevLoc)
+  } else {
+    x = items[0]
   }
+  locs[x] = -1
   var lastIdx = size - 1
   this.size   = lastIdx
+  if(size <= 1) {
+    return x
+  }
   heapDown(this, items[lastIdx], weights[lastIdx])
   return x
-}
-
-proto.remove = function(item) {
-  this.push(item, -Infinity)
-  this.pop()
 }
 
 proto.weight = function(item) {
@@ -168,7 +184,6 @@ proto.minItem = function() {
   }
   return -1
 }
-
 
 proto.dispose = function() {
   pool.free(this._items)
